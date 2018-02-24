@@ -8,6 +8,13 @@
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
+
+// Force to use c++17 level as it is not done so by MSVC.
+// see e.g. https://developercommunity.visualstudio.com/content/problem/54610/-cplusplus-predefined-macro-value.html
+#if defined(__cplusplus)
+#define overridden__cplusplus 201703L
+#endif
+
 #ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 
@@ -154,7 +161,7 @@
 #if ( defined _MSC_VER && _MSC_VER > 1400 && !defined __EDGE__) || \
     ( defined __WAVE__ && __WAVE_HAS_VARIADICS ) || \
     ( defined __GNUC__ && __GNUC__ >= 3 ) || \
-    ( !defined __cplusplus && __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L )
+    ( !defined overridden__cplusplus && __STDC_VERSION__ >= 199901L || overridden__cplusplus >= 201103L )
 
 #ifndef CATCH_CONFIG_NO_VARIADIC_MACROS
 #define CATCH_CONFIG_VARIADIC_MACROS
@@ -166,10 +173,10 @@
 // C++ language feature support
 
 // detect language version:
-#if (__cplusplus == 201103L)
+#if (overridden__cplusplus == 201103L)
 #  define CATCH_CPP11
 #  define CATCH_CPP11_OR_GREATER
-#elif (__cplusplus >= 201103L)
+#elif (overridden__cplusplus >= 201103L)
 #  define CATCH_CPP11_OR_GREATER
 #endif
 
@@ -3766,7 +3773,7 @@ namespace Clara {
         };
 
         // NOTE: std::auto_ptr is deprecated in c++11/c++0x
-#if defined(__cplusplus) && __cplusplus > 199711L
+#if defined(overridden__cplusplus) && overridden__cplusplus > 199711L
         typedef std::unique_ptr<Arg> ArgAutoPtr;
 #else
         typedef std::auto_ptr<Arg> ArgAutoPtr;
@@ -5792,8 +5799,12 @@ namespace Catch {
                     break;
                 case RunTests::InRandomOrder:
                 {
-                    RandomNumberGenerator rng;
-                    std::random_shuffle( matchingTestCases.begin(), matchingTestCases.end(), rng );
+                    // Note: random_shuffle removed in c++17, remove the functionality instead of
+                    //       trying to convert.
+                    // RandomNumberGenerator rng;
+                    // std::random_shuffle( matchingTestCases.begin(), matchingTestCases.end(), rng );
+                    std::sort( matchingTestCases.begin(), matchingTestCases.end(), LexSort() );
+                    break;
                 }
                     break;
                 case RunTests::InDeclarationOrder:
